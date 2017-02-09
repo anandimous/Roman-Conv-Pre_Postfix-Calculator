@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<string.h>
+#include<stdlib.h>
 #include<math.h>
 
 
@@ -25,9 +26,9 @@ int main(int argc, char *argv[]){
 
 	}
 }
-
+//Roman Char Array to Arabic Int Array
 int* roman_to_arabic(char nums[]){
-	int converted[strlen(nums)+1]; 
+	int* converted = (int*)malloc(20 * sizeof(int));
 	const char* matchesI = "Ii";
 	const char* matchesV = "Vv";
 	const char* matchesX = "Xx";
