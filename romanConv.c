@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include "romanConv.h"
 
 //Roman Char Array to Arabic Int Array
 int* roman_to_arabic(char nums[]){
@@ -44,4 +45,10 @@ int* roman_to_arabic(char nums[]){
 		}
 	}
 	return converted;
+}
+
+int finalConvert(int* nums){
+	for (int i = strlen(nums); i >= 0; i--){
+
+	}
 }
