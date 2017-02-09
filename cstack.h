@@ -1,4 +1,4 @@
-#include CSTACK_H_
+#ifndef CSTACK_H_
 #define CSTACK_H_
 
 #include <stdio.h>
