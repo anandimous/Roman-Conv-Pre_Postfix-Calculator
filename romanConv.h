@@ -3,6 +3,5 @@
 
 int* roman_to_arabic(char nums[]);
 int finalConvert(int* nums);
-int arrSize(char nums[]);
 
 #endif // ROMANCONV_H_
