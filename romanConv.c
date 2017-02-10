@@ -47,8 +47,26 @@ int* roman_to_arabic(char nums[]){
 	return converted;
 }
 
-int finalConvert(int* nums){
-	for (int i = strlen(nums); i >= 0; i--){
-
+int finalConvert(int* nums, char roman[]){
+	int max = 0;
+	int total = 0;
+	int i = arrSize(roman);
+	for (i; i >= 0; i--){
+		if (nums[i] >= max){
+			max = nums[i];
+			total += max;
+		}
+		else {
+			total -= nums[i];
+		}
 	}
+	return total;
+}
+
+int arrSize(char nums[]){
+	int size = 0;
+	for (int i = 0; i < strlen(nums); i++ ){
+		size++;
+	}
+	return size;
 }
