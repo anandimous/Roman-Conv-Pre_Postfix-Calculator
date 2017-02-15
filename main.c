@@ -25,7 +25,7 @@ int getPrec(char c){
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
 //IMP INFO: THIS METHOD CANNOT PROCESS ANY ROMAN NUMERALS IN THE INPUT STRING, SO CONVERSION IS REQD BEFORE PASSING AS PARAM
-char* postfix(char str[]) {
+char* postfix(char* str) {
 	int max = strlen(str);	//size of input string
 	char* post[max];	//output postfix string
 	//declared and initialized stack
@@ -56,8 +56,43 @@ char* postfix(char str[]) {
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
-char* prefix(char str[]) {
+char* prefix(char* str) {
 	//TBD, but it's really easy
+
+	char* preStr = strReverse(str);
+	size_t len = strlen(preStr);
+	for (int i = 0; i < len; i++){
+		if (preStr[i] == '('){
+			preStr[i] = ')';
+		}
+		else if (preStr[i] == ')'){
+			preStr[i] = '(';
+		}
+	}
+	preStr = postfix(preStr);
+	preStr = strReverse(str);
+	return preStr;
+
+}
+
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
+char* strReverse(char* str) { 
+	char temp, *finalStr;
+	size_t len,j;
+	if (str != NULL)
+	{
+		len = strlen(str);	
+		finalStr = str;
+		if (len > 1) {
+			j = len - 1;
+			for (int i = 0; i < len; i++){
+				finalStr[i] = str[j];
+				j--;
+			}
+		}
+		return finalStr;
+	}
+	return str;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
