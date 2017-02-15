@@ -57,8 +57,7 @@ char* postfix(char* str) {
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
 char* prefix(char* str) {
-	//TBD, but it's really easy
-
+	
 	char* preStr = strReverse(str);
 	size_t len = strlen(preStr);
 	for (int i = 0; i < len; i++){
@@ -76,7 +75,7 @@ char* prefix(char* str) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-char* strReverse(char* str) { 
+char* strReverse(char* str) {  // returns the reverse of a string
 	char temp, *finalStr;
 	size_t len,j;
 	if (str != NULL)
