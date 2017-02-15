@@ -102,6 +102,7 @@ int main(int argc, char *argv[]){
 	char* inFile;
 	char* outFile;
 	FILE* fp;
+	FILE* fo;
 	char* ret;
 	char* exp = "";
 	const char* matchesNums = " 1234567890";
@@ -118,17 +119,30 @@ int main(int argc, char *argv[]){
 	//file validation
 
 	// Checks if input file has extension .in
-	ret = strstr(argv[1],".in");
+	ret = strstr(argv[1],".IN");
 	if (ret == NULL){
-		inFile = strAppend(argv[1],".in");
+		inFile = strAppend(argv[1],".IN");
 	}
-
+	
+	outFile = strAppend(inFile, " ");
+	for(int j = 0; j < strlen(outFile); j++) {
+		if(outFile[j] == '.') {
+			outFile[j+1] = 'O';
+			outFile[j+2] = 'U';
+			outFile[j+3] = 'T';
+			break;
+		}
+	}
+	
 	// Open file to input stream fp
 	fp = fopen(inFile, "r");
 	if(fp == NULL) {
 		perror("Error opening file: File DNE!");
 		return -1;
 	}
+	
+	// Open file to output stream fp
+	fo = fopen(outFile, "w");
 
 	//file input stream, saves expression as char* to exp
 	ch = getc(fp);
@@ -137,6 +151,34 @@ int main(int argc, char *argv[]){
 		exp = strAppend(exp,(char*) ch);
 		ch = getc(fp);
 	}
+	
+	char* roman_found = ""; //string that holds a
+
+	//i v + 10 + xx |ivxx|
+	bool flag = false;
+	bool romanstr = false;
+	size_t maxsize = strlen(exp);
+	for( pos = 0; pos < maxsize; pos++ ) {
+		if(strchr(matchesOp, exp[pos]) != NULL) { flag = true; }
+		if(isalpha(exp[pos]) && flag == false) {
+			strcat(roman_found, exp[pos]);
+			romanstr = true;
+		}
+		if(flag == true && romanstr == true) {
+			//IMPLEMENT ROMAN CONVERSION HERE  @NICK
+			flag = false;
+			romanstr = false;
+		}
+		//put converted roman num in its original place in the infix string
+	}
+
+	fputs("Prefix: ", fo);
+	//fputs("", fp);                   For prefix str & \n
+	fputs("Postfix: ", fo);
+	//fputs("", fp);                   For postfix str & \n
+	fputs("Value: ", fo);
+	//fputs("", fp);                   For value int & \n
+	
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
