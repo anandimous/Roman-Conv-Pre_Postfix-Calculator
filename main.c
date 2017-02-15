@@ -148,8 +148,7 @@ int main(int argc, char *argv[]){
 
 	//file input stream, saves expression as char* to exp
 	ch = getc(fp);
-	while (ch != EOF) // BEGIN FILE READ
-	{
+	while (ch != EOF) // BEGIN FILE READ {
 		exp = strAppend(exp,(char*) ch);
 		ch = getc(fp);
 	}
@@ -197,6 +196,7 @@ int main(int argc, char *argv[]){
 
 		}
 	}
+	
 
 	fputs("Prefix: ", fo);
 	fputs(prefix(finalExp), fo);
@@ -205,7 +205,9 @@ int main(int argc, char *argv[]){
 	fputs(postfix(finalExp), fo);
 	fputs("\n", fo);
 	fputs("Value: ", fo);
-	//fputs("", fp);                   For value int & \n
+	fputs(calc(finalExp, fo);
+
+	return 0;
 	
 }
 
