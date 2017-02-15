@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
 	const char* matchesOp = "+-*/()";
 
 	//check cmd line args
-	if (argc != 3){
+	if (argc != 2){
 		std::cout << "error: incorrect number of arguments" << std::endl;
 		return -1;
 	}
@@ -87,12 +87,6 @@ int main(int argc, char *argv[]){
 	ret = strstr(argv[1],".in");
 	if (ret == NULL){
 		inFile = strAppend(argv[1],".in");
-	}
-
-	// Checks if output file has extension .out
-	ret = strstr(argv[2],".out");
-	if (ret == NULL){
-		outFile = strAppend(argv[2],".out");
 	}
 
 	// Open file to input stream fp
