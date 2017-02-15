@@ -4,7 +4,7 @@
 #include "cstack.h"
 
 struct node {
-  int node_val;
+  char node_val;
   struct node* ptr_next;
 };
 

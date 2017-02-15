@@ -38,12 +38,12 @@ char* postfix(char* str) {
 			strncat (post, str, 1);
 		}
 		//check if is operator
-		else if(str[i] == '+' || str[i] == '*' || str[i] == '-' || str[i] == '/' || str[i] == '(' || str[i] == ')') {
+		else if(strchr(matchesOp,str[i]) != NULL) {
 			if(stack.isEmpty()) { stack.push(str[i]); } //push op if empty stack
 			else {
-				while(!stack.isEmpty() && stack.peek().getPrec() > str[i].getPrec()) {
+				while(!stack.isEmpty() && getPrec(stack.peek()) > getPrec(str[i])) {
 					//checking precedence of chars in input string w/t the stack and append popped char to output string when condition is met
-					if(str[i].getPrec() < stack.peek().getPrec()) { strncat(post, stack.pop(), 1); }
+					if(getPrec(str[i]) < getPrec(stack.peek())) { strncat(post, stack.pop(), 1); }
 					else { stack.push(str[i]); }
 				}
 			}
@@ -97,18 +97,20 @@ char* strReverse(char* str) {  // returns the reverse of a string
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]){
-	int inNameSize;
 	int ch;
+	int temp;
+	char* tempStr;
 	char* inFile;
 	char* outFile;
 	FILE* fp;
 	FILE* fo;
-	char* ret;
 	char* exp = "";
-	const char* matchesNums = " 1234567890";
-	const char* matchesRoman = " IiVvXxLlCcDdMm";
+	char* finalExp = "";
+	char* roman_str = "";
+	const char* matchesRoman = "IiVvXxLlCcDdMm";
 	const char* matchesSpace = " ";
 	const char* matchesOp = "+-*/()";
+	const char* matchesCalc = "+-*/";
 
 	//check cmd line args
 	if (argc != 2){
@@ -119,7 +121,7 @@ int main(int argc, char *argv[]){
 	//file validation
 
 	// Checks if input file has extension .in
-	ret = strstr(argv[1],".IN");
+	char* ret = strstr(argv[1],".IN");
 	if (ret == NULL){
 		inFile = strAppend(argv[1],".IN");
 	}
@@ -151,34 +153,158 @@ int main(int argc, char *argv[]){
 		exp = strAppend(exp,(char*) ch);
 		ch = getc(fp);
 	}
-	
-	char* roman_found = ""; //string that holds a
 
-	//i v + 10 + xx |ivxx|
-	bool flag = false;
-	bool romanstr = false;
-	size_t maxsize = strlen(exp);
-	for( pos = 0; pos < maxsize; pos++ ) {
-		if(strchr(matchesOp, exp[pos]) != NULL) { flag = true; }
-		if(isalpha(exp[pos]) && flag == false) {
-			strcat(roman_found, exp[pos]);
-			romanstr = true;
+	fp.close();
+
+	// convert string with roman nums to string with only integers
+
+	if (strstr(exp,matchesRoman) != NULL){
+		bool isOp = false;
+		for (int i = 0; i < strlen(exp)+1; i++){
+
+			if (isdigit(exp[i])){				// Append Digit -> finalExp
+				strcat(finalExp,exp[i]);
+			}
+
+			else if (strchr(matchesSpace,exp[i])){	// Append ' ' -> finalExp
+				if (strlen(roman_str) > 0){
+
+				}
+				else {
+					strcat(finalExp,exp[i]);
+				}
+			}
+
+			else if (strchr(matchesRoman,exp[i]) != NULL) {  // Append roman num -> roman_str
+				
+				isOp = false;
+				strcat(roman_str,exp[i]);
+			}
+			else if (strchr(matchesOp,exp[i]) != NULL) {
+				if (!isOp && strlen(roman_str) > 0) {
+					temp = finalConvert(roman_to_arabic(roman_str));
+					strAppend(finalExp,itoa(temp,tempStr,10));
+					roman_str = "";
+				}
+				isOp = true;
+				strcat(finalExp,exp[i]);
+			}
+			else if (exp[i] == '\0' && strlen(roman_str) > 0){
+				temp = finalConvert(roman_to_arabic(roman_str));
+				strAppend(finalExp,itoa(temp,tempStr,10));
+				roman_str = "";
+			}
+
 		}
-		if(flag == true && romanstr == true) {
-			//IMPLEMENT ROMAN CONVERSION HERE  @NICK
-			flag = false;
-			romanstr = false;
-		}
-		//put converted roman num in its original place in the infix string
 	}
 
 	fputs("Prefix: ", fo);
-	//fputs("", fp);                   For prefix str & \n
+	fputs(prefix(finalExp), fo);
+	fputs("\n", fo);
 	fputs("Postfix: ", fo);
-	//fputs("", fp);                   For postfix str & \n
+	fputs(postfix(finalExp), fo);
+	fputs("\n", fo);
 	fputs("Value: ", fo);
 	//fputs("", fp);                   For value int & \n
 	
+}
+
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
+
+char* calc(char* str){
+	struct node* stack;
+	stack.init();
+
+	struct node* opStack;
+	opStack.init();
+
+	for(int i=0; i<strlen(finalExp); i++) {
+		if(isdigit(finalExp[i])) {
+			stack.push(finalExp[i]);
+		}
+
+		else if (finalExp[i] == '(') {		
+			opStack.push(finalExp[i]);
+		}
+
+		else if (finalExp[i] == ')') {
+			while (opStack.peek() != '('){
+				char op = opStack.pop();
+				int val2 = stack.pop();
+				int val1 = stack.pop();	
+
+				if (op == '+'){
+					val1 = val1 + val2;
+					stack.push(val1 + '0');
+				}
+				else if (op == '-'){
+					val1 = val1 - val2;
+					stack.push(val1 + '0');
+				} 
+				else if (op == '*'){
+					val1 = val1 * val2;
+					stack.push(val1 + '0');
+				} 
+				else if (op == '/'){
+					val1 = val1 / val2;
+					stack.push(val1 + '0');
+				} 		
+			}
+			opStack.pop();
+		}
+
+		else if (strchr(matchesCalc,finalExp[i])){
+			while (!opStack.isEmpty() && getPrec(opStack.peek()) >= getPrec(finalExp[i])){
+				char op = opStack.pop();
+				int val2 = stack.pop();
+				int val1 = stack.pop();
+				if (op == '+'){
+					val1 = val1 + val2;
+					stack.push(val1 + '0');
+				}
+				else if (op == '-'){
+					val1 = val1 - val2;
+					stack.push(val1 + '0');
+				} 
+				else if (op == '*'){
+					val1 = val1 * val2;
+					stack.push(val1 + '0');
+				} 
+				else if (op == '/'){
+					val1 = val1 / val2;
+					stack.push(val1 + '0');
+				} 
+
+				opStack.push(finalExp[i]);	
+			}
+		}
+
+	}
+
+	while(!opStack.isEmpty()) {
+		char op = opStack.pop();
+		int val2 = stack.pop();
+		int val1 = stack.pop();
+		if (op == '+'){
+			val1 = val1 + val2;
+			stack.push(val1 + '0');
+		}
+		else if (op == '-'){
+			val1 = val1 - val2;
+			stack.push(val1 + '0');
+		} 
+		else if (op == '*'){
+			val1 = val1 * val2;
+			stack.push(val1 + '0');
+		} 
+		else if (op == '/'){
+			val1 = val1 / val2;
+			stack.push(val1 + '0');
+		} 
+
+	}
+	return stack.pop();
+
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/

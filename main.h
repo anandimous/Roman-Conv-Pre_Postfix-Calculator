@@ -6,6 +6,7 @@ char* postfix(char* str);
 char* prefix(char* str);
 char* strReverse(char* str);
 char* strAppend(char* str1, char* str2);
+char* calc(char* str);
 
 
 
