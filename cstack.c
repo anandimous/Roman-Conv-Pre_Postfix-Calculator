@@ -16,10 +16,11 @@ struct node {
   */
 
 struct node* head;
-int size_ctr = 0;
+int size_ctr;
 
 void init() {
   head = NULL;
+  size_ctr = 0;
 }
 
 bool isEmpty() {
