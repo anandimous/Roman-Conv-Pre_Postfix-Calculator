@@ -115,10 +115,8 @@ int main(int argc, char *argv[]){
 	int ch;
 	int temp;
 	char* tempStr = "";
-	char* inFile;
+	char* inFile = argv[1];
 	char* outFile;
-	FILE* fp;
-	FILE* fo;
 	char* exp = "";
 	char* finalExp = "";
 	char* roman_str = "";
@@ -146,28 +144,43 @@ int main(int argc, char *argv[]){
 			outFile[j+1] = 'O';
 			outFile[j+2] = 'U';
 			outFile[j+3] = 'T';
+			outFile[j+4] = '\0';
+			outFile[j+5] = '\0';
 			break;
 		}
 	}
 
 	// Open file to input stream fp
-	fp = fopen(inFile, "r");
-	if(fp == NULL) {
+	FILE *fp = fopen(inFile, "r");
+	long size;
+	if(!fp) {
 		perror("Error opening file: File DNE!");
 		return -1;
 	}
+	else{
+		fseek (fp, 0, SEEK_END);
+		size = ftell(fp);
+		fseek (fp, 0, SEEK_SET);
+		exp = malloc (size + 1);
 
-	// Open file to output stream fp
-	fo = fopen(outFile, "w");
-
-	//file input stream, saves expression as char* to exp
-	ch = getc(fp);
-	while (ch != EOF) {
-		chAppend(exp,ch);
-		ch = getc(fp);
+		if (exp){
+				fread (exp, 1, size, fp);
+		}
+		fclose (fp);
+		exp[size] = '\0';
 	}
 
-	fclose(fp);
+	// Open file to output stream fp
+	FILE *fo = fopen(outFile, "w");
+
+	//file input stream, saves expression as char* to exp
+	// ch = fgetc(fp);
+	// while (ch != EOF) {
+	// 	chAppend(exp,ch);
+	// 	ch = fgetc(fp);
+	// }
+	//
+	// fclose(fp);
 
 	// convert string with roman nums to string with only integers
 
