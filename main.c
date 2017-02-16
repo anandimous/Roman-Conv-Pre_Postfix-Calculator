@@ -29,7 +29,7 @@ char* postfix(char* str) {
 
 	const char* matchesOp = "+-*/()";
 	int max = strlen(str);	//size of input string
-	char* post;	//output postfix string
+	char* post = "";	//output postfix string
 	//declared and initialized stack
 	struct node* stack;
 	init(stack);
@@ -37,7 +37,7 @@ char* postfix(char* str) {
 	for(int i=0; i<max; i++) {
 		//check if is operand
 		if(isdigit(str[i])) {
-			chAppend(post,str[i]);
+			post = chAppend(post,str[i]);
 		}
 		//check if is operator
 		else if(strchr(matchesOp,str[i]) != NULL) {
@@ -46,7 +46,7 @@ char* postfix(char* str) {
 				while(!isEmpty(stack) && getPrec(peek(stack)) > getPrec(str[i])) {
 					//checking precedence of chars in input string w/t the stack and append popped char to output string when condition is met
 					if(getPrec(str[i]) < getPrec(peek(stack))) {
-						chAppend(post,pop(stack));
+						post = chAppend(post,pop(stack));
 					 }
 					else { push(stack,str[i]);
 					}
@@ -55,7 +55,7 @@ char* postfix(char* str) {
 		}
 	}
 	while(!isEmpty(stack)) {
-		chAppend(post,pop(stack));
+		post = chAppend(post,pop(stack));
 	 } //append all remaining elements in the stack to the postfix string
 
 	return post;
@@ -63,10 +63,14 @@ char* postfix(char* str) {
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
-void chAppend(char* str, char ch){
+char* chAppend(char* str, char ch){
 	int len = strlen(str);
-	str[len] = ch;
-	str[len+1] = '\0';
+	char* str2 = malloc(sizeof(char)*(len+1));
+	strcpy(str2, str);
+	str2[len] = c;
+	str2[len + 1] = '\0';
+	return str2;
+	free(str2);
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
@@ -128,7 +132,7 @@ int main(int argc, char *argv[]){
 
 	//check cmd line args
 	if (argc != 2){
-		printf("error: incorrect number of arguments\n");
+		printf("error: incorrect number of arguments");
 		return -1;
 	}
 
@@ -138,6 +142,9 @@ int main(int argc, char *argv[]){
 	char* ret = strstr(argv[1],".IN");
 	if (ret == NULL){
 		inFile = strAppend(argv[1],".IN");
+	}
+	else {
+		inFile = argv[1];
 	}
 
 	outFile = strAppend(inFile, " ");
@@ -153,7 +160,7 @@ int main(int argc, char *argv[]){
 	// Open file to input stream fp
 	fp = fopen(inFile, "r");
 	if(fp == NULL) {
-		perror("Error opening file: File DNE!");
+		printf("Error opening file: File DNE!");
 		return -1;
 	}
 
@@ -163,7 +170,7 @@ int main(int argc, char *argv[]){
 	//file input stream, saves expression as char* to exp
 	ch = getc(fp);
 	while (ch != EOF) {
-		chAppend(exp,ch);
+		exp = chAppend(exp,ch);
 		ch = getc(fp);
 	}
 
@@ -176,7 +183,7 @@ int main(int argc, char *argv[]){
 		for (int i = 0; i < strlen(exp)+1; i++){
 
 			if (isdigit(exp[i])){				// Append Digit -> finalExp
-				chAppend(finalExp,exp[i]);
+				finalExp = chAppend(finalExp,exp[i]);
 			}
 
 			else if (strchr(matchesSpace,exp[i])){	// Append ' ' -> finalExp
@@ -184,14 +191,14 @@ int main(int argc, char *argv[]){
 
 				}
 				else {
-					chAppend(finalExp,exp[i]);
+					finalExp = chAppend(finalExp,exp[i]);
 				}
 			}
 
 			else if (strchr(matchesRoman,exp[i]) != NULL) {  // Append roman num -> roman_str
 
 				isOp = false;
-				chAppend(roman_str,exp[i]);
+				roman_str = chAppend(roman_str,exp[i]);
 			}
 			else if (strchr(matchesOp,exp[i]) != NULL) {
 				if (!isOp && strlen(roman_str) > 0) {
@@ -202,7 +209,7 @@ int main(int argc, char *argv[]){
 					roman_str = "";
 				}
 				isOp = true;
-				chAppend(finalExp,exp[i]);
+				finalExp = chAppend(finalExp,exp[i]);
 			}
 			else if (exp[i] == '\0' && strlen(roman_str) > 0){
 				temp = finalConvert(roman_to_arabic(roman_str),roman_str);
@@ -223,7 +230,7 @@ int main(int argc, char *argv[]){
 	fputs("\n", fo);
 	fputs("Value: ", fo);
 	tempStr = "";
-	chAppend(tempStr,calc(finalExp));
+	tempStr = chAppend(tempStr,calc(finalExp));
 	fputs(tempStr, fo);
 	fclose(fo);
 	return 0;
@@ -334,15 +341,17 @@ char calc(char* str){
 
 //Concatenates two strings, returns a new string
 char* strAppend(char* str1, char* str2){
-	char * newStr;
-	if ((newStr = malloc(strlen(str1)+strlen(str2)+1)) != NULL){
+	char* newStr;
+	int total_len = strlen(str1) + strlen(str2);
+	if ((newStr = malloc(sizeof(char)*(total_len+1))) != NULL){
 		newStr[0] = '\0';
 		strcat(newStr,str1);
 		strcat(newStr,str2);
 		return newStr;
+		free(newStr);
 	}
 	else {
-		perror("malloc failed for strAppend");
+		printf("malloc failed for strAppend");
 		return "";
 	}
 }

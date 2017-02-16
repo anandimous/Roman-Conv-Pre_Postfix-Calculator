@@ -31,26 +31,29 @@ bool isEmpty(struct node* head) {
 
 void push(struct node* head,char inp) {
     struct node* element = (struct node*) malloc(sizeof(struct node));
-    if(isEmpty(element) == TRUE){
+    if(element == NULL) { printf("stack push malloc unsuccessul!\n"); }
+    if(isEmpty(element) == true){
       element->node_val = inp;
       element->ptr_next = NULL;
+      head = element;
       head->size_ctr = head->size_ctr + 1;
     }
     else {
       element->node_val = inp;
       element->ptr_next = head;
+      head = element;
       head->size_ctr = head->size_ctr + 1;
     }
-    head = element;
+    free(element);
 }
 
 char pop(struct node *head) {
   if(isEmpty(head)) {
-    perror("%sOPERATION ERROR: Nothing to pop; stack is empty!\n", );
+    printf("OPERATION ERROR: Nothing to pop; stack is empty!\n");
   }
   else {
     struct node* rm = head;
-    head = head->next;
+    head = rm->ptr_next;
     return rm->node_val;
     free(rm);
     head->size_ctr = head->size_ctr - 1;
@@ -59,10 +62,10 @@ char pop(struct node *head) {
 
 char peek(struct node* head) {
   if(isEmpty(head)) {
-    perror("%sOPERATION ERROR: Nothing to peek; stack is empty!\n", );
+    printf("OPERATION ERROR: Nothing to peek; stack is empty!\n");
   }
   else {
-    struct node* pm = head;
+    struct node* rm = head;
     return rm->node_val;
   }
 }

@@ -45,6 +45,7 @@ int* roman_to_arabic(char* nums){
 		}
 	}
 	return converted;
+	free(converted);
 }
 
 int finalConvert(int* nums, char* roman){
