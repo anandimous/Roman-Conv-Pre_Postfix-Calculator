@@ -52,6 +52,12 @@ char* postfix(char* str) {
 				}
 			}
 		}
+		else if(str[i] == '\n'){
+
+		}
+		else { // string is unknown
+
+		}
 	}
 	while(!isEmpty(stack)) {
 		post = chAppend(post,peek(stack));
@@ -116,7 +122,6 @@ char* strReverse(char* str) {  // returns the reverse of a string
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]){
-	int ch;
 	int temp;
 	char* tempStr = "";
 	char* inFile = argv[1];
@@ -178,13 +183,33 @@ int main(int argc, char *argv[]){
 		if (exp){
 				fread (exp, 1, size, fp);
 		}
-		fclose (fp);
 		exp[size] = '\0';
+		fclose(fp);
 	}
 
-	 FILE *fo = fopen(outFile, "w");
-
-	fclose(fp);
+	FILE *fo = fopen(outFile, "w");
+	if (!fo) {
+		perror("Error opening outFile: Creation Failed!");
+		return -1;
+	}
+	else{
+	// check if exp contains any illegal characters --> Error!
+		for (int i = 0; i < strlen(exp); i++){
+			if ( (strchr(matchesRoman,exp[i]) != NULL) ||
+						(strchr(matchesOp,exp[i]) != NULL) ||
+						(strchr(matchesSpace,exp[i]) != NULL) ||
+						(strchr("\n",exp[i]) != NULL) ||
+						(isdigit(exp[i])) ){
+							// The character is allowed
+			}
+			else {
+				//fputs("Error!", fo);
+				fprintf(fo,"Error!");
+				fclose(fo);
+				return 0;
+			}
+		}
+	}
 
 	// convert string with roman nums to string with only integers
 
