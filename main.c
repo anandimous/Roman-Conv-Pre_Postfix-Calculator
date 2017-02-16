@@ -31,8 +31,7 @@ char* postfix(char* str) {
 	int max = strlen(str);	//size of input string
 	char* post = "";	//output postfix string
 	//declared and initialized stack
-	struct node* stack;
-	init(stack);
+	struct node* stack = NULL;
 
 	for(int i=0; i<max; i++) {
 		//check if is operand
@@ -41,21 +40,22 @@ char* postfix(char* str) {
 		}
 		//check if is operator
 		else if(strchr(matchesOp,str[i]) != NULL) {
-			if(isEmpty(stack)) { push(stack,str[i]); } //push op if empty stack
+			if(isEmpty(stack)) { stack = push(stack,str[i]); } //push op if empty stack
 			else {
 				while(!isEmpty(stack) && getPrec(peek(stack)) > getPrec(str[i])) {
 					//checking precedence of chars in input string w/t the stack and append popped char to output string when condition is met
 					if(getPrec(str[i]) < getPrec(peek(stack))) {
-						post = chAppend(post,pop(stack));
+						post = chAppend(post,peek(stack));
+						stack = pop(stack);
 					 }
-					else { push(stack,str[i]);
-					}
+					else { stack = push(stack,str[i]); }
 				}
 			}
 		}
 	}
 	while(!isEmpty(stack)) {
-		post = chAppend(post,pop(stack));
+		post = chAppend(post,peek(stack));
+		stack = pop(stack);
 	 } //append all remaining elements in the stack to the postfix string
 
 	return post;
@@ -242,98 +242,108 @@ int main(int argc, char *argv[]){
 char calc(char* str){
 	const char* matchesCalc = "+-*/";
 	char* finalExp = "";
-	struct node* stack;
-	init(stack);
-
-	struct node* opStack;
-	init(opStack);
+	struct node* stack = NULL;
+	struct node* opStack = NULL;
 
 	for(int i=0; i<strlen(finalExp); i++) {
 		if(isdigit(finalExp[i])) {
-			push(stack,finalExp[i]);
+			stack = push(stack,finalExp[i]);
 		}
 
 		else if (finalExp[i] == '(') {
-			push(opStack,finalExp[i]);
+			stack = push(opStack,finalExp[i]);
 		}
 
 		else if (finalExp[i] == ')') {
 			while (peek(opStack) != '('){
-				char op = pop(opStack);
-				int val2 = pop(stack);
-				int val1 = pop(stack);
+				char op = peek(opStack);
+				opStack = pop(opStack);
+				int val2 = peek(stack);
+				stack = pop(stack);
+				int val1 = peek(stack);
+				stack = pop(stack);
 
 				if (op == '+'){
 					val1 = val1 + val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 				else if (op == '-'){
 					val1 = val1 - val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 				else if (op == '*'){
 					val1 = val1 * val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 				else if (op == '/'){
 					val1 = val1 / val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 			}
-			pop(opStack);
+			peek(opStack);
+			opStack = pop(opStack);
 		}
 
 		else if (strchr(matchesCalc,finalExp[i])){
 			while (!isEmpty(opStack) && getPrec(peek(opStack)) >= getPrec(finalExp[i])){
-				char op = pop(opStack);
-				int val2 = pop(stack);
-				int val1 = pop(stack);
+				char op = peek(opStack);
+				opStack = pop(opStack);
+				int val2 = peek(stack);
+				stack = pop(stack);
+				int val1 = peek(stack);
+				stack = pop(stack);
+
 				if (op == '+'){
 					val1 = val1 + val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 				else if (op == '-'){
 					val1 = val1 - val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 				else if (op == '*'){
 					val1 = val1 * val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 				else if (op == '/'){
 					val1 = val1 / val2;
-					push(stack,val1 + '0');
+					stack = push(stack,val1 + '0');
 				}
 
-				push(opStack,finalExp[i]);
+				opStack = push(opStack,finalExp[i]);
 			}
 		}
 
 	}
 
 	while(!isEmpty(opStack)) {
-		char op = pop(opStack);
-		int val2 = pop(stack);
-		int val1 = pop(stack);
+		char op = peek(opStack);
+		opStack = pop(opStack);
+		int val2 = peek(stack);
+		stack = pop(stack);
+		int val1 = peek(stack);
+		stack = pop(stack);
+
 		if (op == '+'){
 			val1 = val1 + val2;
-			push(stack,val1 + '0');
+			stack = push(stack,val1 + '0');
 		}
 		else if (op == '-'){
 			val1 = val1 - val2;
-			push(stack,val1 + '0');
+			stack = push(stack,val1 + '0');
 		}
 		else if (op == '*'){
 			val1 = val1 * val2;
-			push(stack,val1 + '0');
+			stack = push(stack,val1 + '0');
 		}
 		else if (op == '/'){
 			val1 = val1 / val2;
-			push(stack,val1 + '0');
+			stack = push(stack,val1 + '0');
 		}
 
 	}
-	return pop(stack);
+	return peek(stack);
+	stack = pop(stack);
 
 }
 
