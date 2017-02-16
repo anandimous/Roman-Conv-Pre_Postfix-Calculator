@@ -158,7 +158,7 @@ int main(int argc, char *argv[]){
 	}
 
 	// Open file to input stream fp
-	FILE fp = fopen(inFile, "r");
+	FILE *fp = fopen(inFile, "r");
 	if(fp == NULL) {
 		printf("Error opening file: File DNE!");
 		return -1;
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]){
 	// }
 	//
 	// // Open file to output stream fp
-	// FILE *fo = fopen(outFile, "w");
+	 FILE *fo = fopen(outFile, "w");
 
 	//file input stream, saves expression as char* to exp
 	ch = getc(fp);
