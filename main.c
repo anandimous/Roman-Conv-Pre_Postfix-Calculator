@@ -159,32 +159,30 @@ int main(int argc, char *argv[]){
 
 	// Open file to input stream fp
 	FILE *fp = fopen(inFile, "r");
-	if(fp == NULL) {
-		printf("Error opening file: File DNE!");
-		return -1;
-	}
-	// else{
-	// 	fseek (fp, 0, SEEK_END);
-	// 	size = ftell(fp);
-	// 	fseek (fp, 0, SEEK_SET);
-	// 	exp = malloc (size + 1);
-	//
-	// 	if (exp){
-	// 			fread (exp, 1, size, fp);
-	// 	}
-	// 	fclose (fp);
-	// 	exp[size] = '\0';
+	// if(fp == NULL) {
+	// 	printf("Error opening file: File DNE!");
+	// 	return -1;
 	// }
-	//
-	// // Open file to output stream fp
-	 FILE *fo = fopen(outFile, "w");
 
-	//file input stream, saves expression as char* to exp
-	ch = getc(fp);
-	while (ch != EOF) {
-		exp = chAppend(exp,ch);
-		ch = getc(fp);
+	if(!fp) {
+ 		perror("Error opening file: File DNE!");
+ 		return -1;
+ 	}
+	else{
+		long size;
+		fseek (fp, 0, SEEK_END);
+		size = ftell(fp);
+		fseek (fp, 0, SEEK_SET);
+		exp = malloc (size + 1);
+
+		if (exp){
+				fread (exp, 1, size, fp);
+		}
+		fclose (fp);
+		exp[size] = '\0';
 	}
+
+	 FILE *fo = fopen(outFile, "w");
 
 	fclose(fp);
 
