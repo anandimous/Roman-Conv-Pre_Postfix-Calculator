@@ -4,7 +4,7 @@
 #include "romanConv.h"
 
 //Roman Char Array to Arabic Int Array
-int* roman_to_arabic(char nums[]){
+int* roman_to_arabic(char* nums){
 	int* converted = (int*)malloc(20 * sizeof(int));
 	const char* matchesI = "Ii";
 	const char* matchesV = "Vv";
@@ -47,7 +47,7 @@ int* roman_to_arabic(char nums[]){
 	return converted;
 }
 
-int finalConvert(int* nums, char roman[]){
+int finalConvert(int* nums, char* roman){
 	int max = 0;
 	int total = 0;
 	for (int i = strlen(roman); i >= 0; i--){

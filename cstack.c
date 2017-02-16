@@ -1,11 +1,13 @@
 //stack method
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "cstack.h"
 
 struct node {
   char node_val;
   struct node* ptr_next;
+  int size_ctr;
 };
 
 /***
@@ -15,35 +17,35 @@ struct node {
   size()
   */
 
-struct node* head;
-int size_ctr;
+// struct node* head;
+// int size_ctr;
 
-void init() {
+void init(struct node* head) {
   head = NULL;
-  size_ctr = 0;
+  head->size_ctr = 0;
 }
 
-bool isEmpty() {
-  return size_ctr == 0;
+bool isEmpty(struct node* head) {
+  return head->size_ctr == 0;
 }
 
-void push(char inp) {
+void push(struct node* head,char inp) {
     struct node* element = (struct node*) malloc(sizeof(struct node));
-    if(isEmpty() == TRUE){
+    if(isEmpty(element) == TRUE){
       element->node_val = inp;
       element->ptr_next = NULL;
-      size_ctr = size_ctr + 1;
+      head->size_ctr = head->size_ctr + 1;
     }
     else {
       element->node_val = inp;
       element->ptr_next = head;
-      size_ctr = size_ctr + 1;
+      head->size_ctr = head->size_ctr + 1;
     }
     head = element;
 }
 
-char pop() {
-  if(isEmpty()) {
+char pop(struct node *head) {
+  if(isEmpty(head)) {
     perror("%sOPERATION ERROR: Nothing to pop; stack is empty!\n", );
   }
   else {
@@ -51,12 +53,12 @@ char pop() {
     head = head->next;
     return rm->node_val;
     free(rm);
-    size_ctr = size_ctr - 1;
+    head->size_ctr = head->size_ctr - 1;
   }
 }
 
-char peek() {
-  if(isEmpty()) {
+char peek(struct node* head) {
+  if(isEmpty(head)) {
     perror("%sOPERATION ERROR: Nothing to peek; stack is empty!\n", );
   }
   else {
@@ -65,6 +67,6 @@ char peek() {
   }
 }
 
-int size() {
-  return size_ctr;
+int size(struct node* head) {
+  return head->size_ctr;
 }

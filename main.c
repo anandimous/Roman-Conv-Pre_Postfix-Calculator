@@ -3,6 +3,7 @@
 #include<string.h>
 #include<stdlib.h>
 #include<math.h>
+#include<stdbool.h>
 #include "cstack.h"
 #include "romanConv.h"
 #include "main.h"
@@ -11,13 +12,12 @@
 int getPrec(char c){
 	if (c == '(') { return 3; }
 	else if (c == ')') { return 3; }
-	else if (c == "*") { return 2; }
-	else if (c == "/") { return 2; }
-	else if (c == "+") { return 1; }
-	else if (c == "-") { return 1; }
+	else if (c == '*') { return 2; }
+	else if (c == '/') { return 2; }
+	else if (c == '+') { return 1; }
+	else if (c == '-') { return 1; }
 	else {
 		//error
-		std::cout << "error: argument is not an operator" << std::endl;
 		return -1;
 	}
 }
@@ -26,38 +26,53 @@ int getPrec(char c){
 
 //IMP INFO: THIS METHOD CANNOT PROCESS ANY ROMAN NUMERALS IN THE INPUT STRING, SO CONVERSION IS REQD BEFORE PASSING AS PARAM
 char* postfix(char* str) {
+
+	const char* matchesOp = "+-*/()";
 	int max = strlen(str);	//size of input string
-	char* post[max];	//output postfix string
+	char* post;	//output postfix string
 	//declared and initialized stack
 	struct node* stack;
-	stack.init();
+	init(stack);
 
 	for(int i=0; i<max; i++) {
 		//check if is operand
 		if(isdigit(str[i])) {
-			strncat (post, str, 1);
+			chAppend(post,str[i]);
 		}
 		//check if is operator
 		else if(strchr(matchesOp,str[i]) != NULL) {
-			if(stack.isEmpty()) { stack.push(str[i]); } //push op if empty stack
+			if(isEmpty(stack)) { push(stack,str[i]); } //push op if empty stack
 			else {
-				while(!stack.isEmpty() && getPrec(stack.peek()) > getPrec(str[i])) {
+				while(!isEmpty(stack) && getPrec(peek(stack)) > getPrec(str[i])) {
 					//checking precedence of chars in input string w/t the stack and append popped char to output string when condition is met
-					if(getPrec(str[i]) < getPrec(stack.peek())) { strncat(post, stack.pop(), 1); }
-					else { stack.push(str[i]); }
+					if(getPrec(str[i]) < getPrec(peek(stack))) {
+						chAppend(post,pop(stack));
+					 }
+					else { push(stack,str[i]);
+					}
 				}
 			}
 		}
 	}
-	while(!stack.isEmpty()) { strcat(post, stack.pop()); } //append all remaining elements in the stack to the postfix string
+	while(!isEmpty(stack)) {
+		chAppend(post,pop(stack));
+	 } //append all remaining elements in the stack to the postfix string
 
 	return post;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
+void chAppend(char* str, char ch){
+	int len = strlen(str);
+	str[len] = ch;
+	str[len+1] = '\0';
+}
+
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
+
 char* prefix(char* str) {
-	
+
 	char* preStr = strReverse(str);
 	size_t len = strlen(preStr);
 	for (int i = 0; i < len; i++){
@@ -76,11 +91,11 @@ char* prefix(char* str) {
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 char* strReverse(char* str) {  // returns the reverse of a string
-	char temp, *finalStr;
+	char *finalStr;
 	size_t len,j;
 	if (str != NULL)
 	{
-		len = strlen(str);	
+		len = strlen(str);
 		finalStr = str;
 		if (len > 1) {
 			j = len - 1;
@@ -99,7 +114,7 @@ char* strReverse(char* str) {  // returns the reverse of a string
 int main(int argc, char *argv[]){
 	int ch;
 	int temp;
-	char* tempStr;
+	char* tempStr = "";
 	char* inFile;
 	char* outFile;
 	FILE* fp;
@@ -110,11 +125,10 @@ int main(int argc, char *argv[]){
 	const char* matchesRoman = "IiVvXxLlCcDdMm";
 	const char* matchesSpace = " ";
 	const char* matchesOp = "+-*/()";
-	const char* matchesCalc = "+-*/";
 
 	//check cmd line args
 	if (argc != 2){
-		std::cout << "error: incorrect number of arguments" << std::endl;
+		printf("error: incorrect number of arguments\n");
 		return -1;
 	}
 
@@ -125,7 +139,7 @@ int main(int argc, char *argv[]){
 	if (ret == NULL){
 		inFile = strAppend(argv[1],".IN");
 	}
-	
+
 	outFile = strAppend(inFile, " ");
 	for(int j = 0; j < strlen(outFile); j++) {
 		if(outFile[j] == '.') {
@@ -135,25 +149,25 @@ int main(int argc, char *argv[]){
 			break;
 		}
 	}
-	
+
 	// Open file to input stream fp
 	fp = fopen(inFile, "r");
 	if(fp == NULL) {
 		perror("Error opening file: File DNE!");
 		return -1;
 	}
-	
+
 	// Open file to output stream fp
 	fo = fopen(outFile, "w");
 
 	//file input stream, saves expression as char* to exp
 	ch = getc(fp);
-	while (ch != EOF) // BEGIN FILE READ {
-		exp = strAppend(exp,(char*) ch);
+	while (ch != EOF) {
+		chAppend(exp,ch);
 		ch = getc(fp);
 	}
 
-	fp.close();
+	fclose(fp);
 
 	// convert string with roman nums to string with only integers
 
@@ -162,7 +176,7 @@ int main(int argc, char *argv[]){
 		for (int i = 0; i < strlen(exp)+1; i++){
 
 			if (isdigit(exp[i])){				// Append Digit -> finalExp
-				strcat(finalExp,exp[i]);
+				chAppend(finalExp,exp[i]);
 			}
 
 			else if (strchr(matchesSpace,exp[i])){	// Append ' ' -> finalExp
@@ -170,33 +184,36 @@ int main(int argc, char *argv[]){
 
 				}
 				else {
-					strcat(finalExp,exp[i]);
+					chAppend(finalExp,exp[i]);
 				}
 			}
 
 			else if (strchr(matchesRoman,exp[i]) != NULL) {  // Append roman num -> roman_str
-				
+
 				isOp = false;
-				strcat(roman_str,exp[i]);
+				chAppend(roman_str,exp[i]);
 			}
 			else if (strchr(matchesOp,exp[i]) != NULL) {
 				if (!isOp && strlen(roman_str) > 0) {
-					temp = finalConvert(roman_to_arabic(roman_str));
-					strAppend(finalExp,itoa(temp,tempStr,10));
+					temp = finalConvert(roman_to_arabic(roman_str),roman_str);
+					sprintf(tempStr,"%d", temp);
+					strAppend(finalExp,tempStr);
+
 					roman_str = "";
 				}
 				isOp = true;
-				strcat(finalExp,exp[i]);
+				chAppend(finalExp,exp[i]);
 			}
 			else if (exp[i] == '\0' && strlen(roman_str) > 0){
-				temp = finalConvert(roman_to_arabic(roman_str));
-				strAppend(finalExp,itoa(temp,tempStr,10));
+				temp = finalConvert(roman_to_arabic(roman_str),roman_str);
+				sprintf(tempStr,"%d",temp);
+				strAppend(finalExp,tempStr);
 				roman_str = "";
 			}
 
 		}
 	}
-	
+
 
 	fputs("Prefix: ", fo);
 	fputs(prefix(finalExp), fo);
@@ -205,107 +222,111 @@ int main(int argc, char *argv[]){
 	fputs(postfix(finalExp), fo);
 	fputs("\n", fo);
 	fputs("Value: ", fo);
-	fputs(calc(finalExp, fo);
-
+	tempStr = "";
+	chAppend(tempStr,calc(finalExp));
+	fputs(tempStr, fo);
+	fclose(fo);
 	return 0;
-	
+
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
-char* calc(char* str){
+char calc(char* str){
+	const char* matchesCalc = "+-*/";
+	char* finalExp = "";
 	struct node* stack;
-	stack.init();
+	init(stack);
 
 	struct node* opStack;
-	opStack.init();
+	init(opStack);
 
 	for(int i=0; i<strlen(finalExp); i++) {
 		if(isdigit(finalExp[i])) {
-			stack.push(finalExp[i]);
+			push(stack,finalExp[i]);
 		}
 
-		else if (finalExp[i] == '(') {		
-			opStack.push(finalExp[i]);
+		else if (finalExp[i] == '(') {
+			push(opStack,finalExp[i]);
 		}
 
 		else if (finalExp[i] == ')') {
-			while (opStack.peek() != '('){
-				char op = opStack.pop();
-				int val2 = stack.pop();
-				int val1 = stack.pop();	
+			while (peek(opStack) != '('){
+				char op = pop(opStack);
+				int val2 = pop(stack);
+				int val1 = pop(stack);
 
 				if (op == '+'){
 					val1 = val1 + val2;
-					stack.push(val1 + '0');
+					push(stack,val1 + '0');
 				}
 				else if (op == '-'){
 					val1 = val1 - val2;
-					stack.push(val1 + '0');
-				} 
+					push(stack,val1 + '0');
+				}
 				else if (op == '*'){
 					val1 = val1 * val2;
-					stack.push(val1 + '0');
-				} 
+					push(stack,val1 + '0');
+				}
 				else if (op == '/'){
 					val1 = val1 / val2;
-					stack.push(val1 + '0');
-				} 		
+					push(stack,val1 + '0');
+				}
 			}
-			opStack.pop();
+			pop(opStack);
 		}
 
 		else if (strchr(matchesCalc,finalExp[i])){
-			while (!opStack.isEmpty() && getPrec(opStack.peek()) >= getPrec(finalExp[i])){
-				char op = opStack.pop();
-				int val2 = stack.pop();
-				int val1 = stack.pop();
+			while (!isEmpty(opStack) && getPrec(peek(opStack)) >= getPrec(finalExp[i])){
+				char op = pop(opStack);
+				int val2 = pop(stack);
+				int val1 = pop(stack);
 				if (op == '+'){
 					val1 = val1 + val2;
-					stack.push(val1 + '0');
+					push(stack,val1 + '0');
 				}
 				else if (op == '-'){
 					val1 = val1 - val2;
-					stack.push(val1 + '0');
-				} 
+					push(stack,val1 + '0');
+				}
 				else if (op == '*'){
 					val1 = val1 * val2;
-					stack.push(val1 + '0');
-				} 
+					push(stack,val1 + '0');
+				}
 				else if (op == '/'){
 					val1 = val1 / val2;
-					stack.push(val1 + '0');
-				} 
+					push(stack,val1 + '0');
+				}
 
-				opStack.push(finalExp[i]);	
+				push(opStack,finalExp[i]);
 			}
 		}
 
 	}
 
-	while(!opStack.isEmpty()) {
-		char op = opStack.pop();
-		int val2 = stack.pop();
-		int val1 = stack.pop();
+	while(!isEmpty(opStack)) {
+		char op = pop(opStack);
+		int val2 = pop(stack);
+		int val1 = pop(stack);
 		if (op == '+'){
 			val1 = val1 + val2;
-			stack.push(val1 + '0');
+			push(stack,val1 + '0');
 		}
 		else if (op == '-'){
 			val1 = val1 - val2;
-			stack.push(val1 + '0');
-		} 
+			push(stack,val1 + '0');
+		}
 		else if (op == '*'){
 			val1 = val1 * val2;
-			stack.push(val1 + '0');
-		} 
+			push(stack,val1 + '0');
+		}
 		else if (op == '/'){
 			val1 = val1 / val2;
-			stack.push(val1 + '0');
-		} 
+			push(stack,val1 + '0');
+		}
 
 	}
-	return stack.pop();
+	return pop(stack);
 
 }
 
