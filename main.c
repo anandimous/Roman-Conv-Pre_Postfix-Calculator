@@ -69,14 +69,13 @@ char* postfix(char* str) {
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
-char* chAppend(char* str, char ch){
+char* chAppend(char* str, char c){
 	int len = strlen(str);
-	char* str2 = malloc(sizeof(char)*(len+1));
+	char* str2 = malloc(len+2);  //accounts for end terminator
 	strcpy(str2, str);
 	str2[len] = c;
 	str2[len + 1] = '\0';
 	return str2;
-	free(str2);
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
@@ -93,30 +92,36 @@ char* prefix(char* str) {
 			preStr[i] = '(';
 		}
 	}
-	preStr = postfix(preStr);
-	preStr = strReverse(str);
-	return preStr;
+	char* postStr = postfix(preStr);
+	return strReverse(postStr);
 
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 char* strReverse(char* str) {  // returns the reverse of a string
-	char *finalStr;
-	size_t len,j;
+	int length;
+	char *start, *end, temp;
 	if (str != NULL)
 	{
-		len = strlen(str);
-		finalStr = str;
-		if (len > 1) {
-			j = len - 1;
-			for (int i = 0; i < len; i++){
-				finalStr[i] = str[j];
-				j--;
-			}
+		length = strlen(str);
+		start = str;
+		end = str;
+
+		// point end to the end of str
+		for (int i = 0; i < length-1; i++){
+			end++;
 		}
-		return finalStr;
+		// swap pointers from beginning and end of str, work to middle
+		for (int i = 0; i < length/2; i++){
+			temp = *end;
+			*end = *start;
+			*start = temp;
+
+			start++;
+			end--;
+		}
 	}
-	return str;
+	return  str;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
@@ -127,7 +132,7 @@ int main(int argc, char *argv[]){
 	char* inFile = argv[1];
 	char* outFile;
 	// char* ret;
-	char* exp = "";
+	char* bfr = "";
 	char* finalExp = "";
 	char* roman_str = "";
 	const char* matchesRoman = "IiVvXxLlCcDdMm";
@@ -142,15 +147,8 @@ int main(int argc, char *argv[]){
 
 	//file validation
 
-	// Checks if input file has extension .in
-	// if (ret = strstr(argv[1],".IN") == NULL){
-	// 	inFile = strAppend(argv[1],".IN");
-	// }
-	// else {
-	// 	inFile = argv[1];
-	// }
-
 	outFile = strAppend(inFile, " ");
+	// outFile -> inFile.OUT
 	for(int j = 0; j < strlen(outFile); j++) {
 		if(outFile[j] == '.') {
 			outFile[j+1] = 'O';
@@ -173,17 +171,20 @@ int main(int argc, char *argv[]){
  		perror("Error opening file: File DNE!");
  		return -1;
  	}
+
+	// Get size of file to malloc for our string buffer
 	else{
 		long size;
 		fseek (fp, 0, SEEK_END);
 		size = ftell(fp);
 		fseek (fp, 0, SEEK_SET);
-		exp = malloc (size + 1);
+		bfr = malloc (size + 1);
+		finalExp = malloc(size + 1);
 
-		if (exp){
-				fread (exp, 1, size, fp);
+		if (bfr){
+				fread (bfr, 1, size, fp);
 		}
-		exp[size] = '\0';
+		bfr[size] = '\0';
 		fclose(fp);
 	}
 
@@ -193,13 +194,13 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 	else{
-	// check if exp contains any illegal characters --> Error!
-		for (int i = 0; i < strlen(exp); i++){
-			if ( (strchr(matchesRoman,exp[i]) != NULL) ||
-						(strchr(matchesOp,exp[i]) != NULL) ||
-						(strchr(matchesSpace,exp[i]) != NULL) ||
-						(strchr("\n",exp[i]) != NULL) ||
-						(isdigit(exp[i])) ){
+	// check if bfr contains any illegal characters --> Error!
+		for (int i = 0; i < strlen(bfr); i++){
+			if ( (strchr(matchesRoman,bfr[i]) != NULL) ||
+						(strchr(matchesOp,bfr[i]) != NULL) ||
+						(strchr(matchesSpace,bfr[i]) != NULL) ||
+						(strchr("\n",bfr[i]) != NULL) ||
+						(isdigit(bfr[i])) ){
 							// The character is allowed
 			}
 			else {
@@ -213,29 +214,29 @@ int main(int argc, char *argv[]){
 
 	// convert string with roman nums to string with only integers
 
-	if (strstr(exp,matchesRoman) != NULL){
+	if (strstr(bfr,matchesRoman) != NULL){
 		bool isOp = false;
-		for (int i = 0; i < strlen(exp)+1; i++){
+		for (int i = 0; i < strlen(bfr)+1; i++){
 
-			if (isdigit(exp[i])){				// Append Digit -> finalExp
-				chAppend(finalExp,exp[i]);
+			if (isdigit(bfr[i])){				// Append Digit -> finalExp
+				finalExp = chAppend(finalExp,bfr[i]);
 			}
 
-			else if (strchr(matchesSpace,exp[i])){	// Append ' ' -> finalExp
+			else if (strchr(matchesSpace,bfr[i])){	// Append ' ' -> finalExp
 				if (strlen(roman_str) > 0){
 
 				}
 				else {
-					chAppend(finalExp,exp[i]);
+					finalExp = chAppend(finalExp,bfr[i]);
 				}
 			}
 
-			else if (strchr(matchesRoman,exp[i]) != NULL) {  // Append roman num -> roman_str
+			else if (strchr(matchesRoman,bfr[i]) != NULL) {  // Append roman num -> roman_str
 
 				isOp = false;
-				chAppend(roman_str,exp[i]);
+				roman_str = chAppend(roman_str,bfr[i]);
 			}
-			else if (strchr(matchesOp,exp[i]) != NULL) {
+			else if (strchr(matchesOp,bfr[i]) != NULL) {
 				if (!isOp && strlen(roman_str) > 0) {
 					temp = finalConvert(roman_to_arabic(roman_str),roman_str);
 					sprintf(tempStr,"%d", temp);
@@ -244,9 +245,9 @@ int main(int argc, char *argv[]){
 					roman_str = "";
 				}
 				isOp = true;
-				chAppend(finalExp,exp[i]);
+				finalExp = chAppend(finalExp,bfr[i]);
 			}
-			else if (exp[i] == '\0' && strlen(roman_str) > 0){
+			else if (bfr[i] == '\0' && strlen(roman_str) > 0){
 				temp = finalConvert(roman_to_arabic(roman_str),roman_str);
 				sprintf(tempStr,"%d",temp);
 				strAppend(finalExp,tempStr);
@@ -255,13 +256,24 @@ int main(int argc, char *argv[]){
 
 		}
 	}
+	else {
+		finalExp = bfr;
+	}
 
+	// Used to get Infix as prefix and as postfix in prep for file write
+
+	char* prefStr = finalExp;
+	char* postStr = finalExp;
+	prefStr = prefix(prefStr);
+	postStr = postfix(postStr);
+
+	// BEGIN FILE WRITING
 
 	fputs("Prefix: ", fo);
-	fputs(prefix(finalExp), fo);
+	fputs(prefStr, fo);
 	fputs("\n", fo);
 	fputs("Postfix: ", fo);
-	fputs(postfix(finalExp), fo);
+	fputs(postStr, fo);
 	fputs("\n", fo);
 	fputs("Value: ", fo);
 	tempStr = chAppend(tempStr,calc(finalExp));
@@ -272,7 +284,7 @@ int main(int argc, char *argv[]){
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-
+// Calculates value of infix expression
 char calc(char* finalExp){
 	const char* matchesCalc = "+-*/";
 	struct node* stack = NULL;
