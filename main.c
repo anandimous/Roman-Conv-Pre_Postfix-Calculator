@@ -126,6 +126,7 @@ int main(int argc, char *argv[]){
 	char* tempStr = "";
 	char* inFile = argv[1];
 	char* outFile;
+	// char* ret;
 	char* exp = "";
 	char* finalExp = "";
 	char* roman_str = "";
@@ -142,13 +143,12 @@ int main(int argc, char *argv[]){
 	//file validation
 
 	// Checks if input file has extension .in
-	char* ret = strstr(argv[1],".IN");
-	if (ret == NULL){
-		inFile = strAppend(argv[1],".IN");
-	}
-	else {
-		inFile = argv[1];
-	}
+	// if (ret = strstr(argv[1],".IN") == NULL){
+	// 	inFile = strAppend(argv[1],".IN");
+	// }
+	// else {
+	// 	inFile = argv[1];
+	// }
 
 	outFile = strAppend(inFile, " ");
 	for(int j = 0; j < strlen(outFile); j++) {
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]){
 		for (int i = 0; i < strlen(exp)+1; i++){
 
 			if (isdigit(exp[i])){				// Append Digit -> finalExp
-				finalExp = chAppend(finalExp,exp[i]);
+				chAppend(finalExp,exp[i]);
 			}
 
 			else if (strchr(matchesSpace,exp[i])){	// Append ' ' -> finalExp
@@ -226,14 +226,14 @@ int main(int argc, char *argv[]){
 
 				}
 				else {
-					finalExp = chAppend(finalExp,exp[i]);
+					chAppend(finalExp,exp[i]);
 				}
 			}
 
 			else if (strchr(matchesRoman,exp[i]) != NULL) {  // Append roman num -> roman_str
 
 				isOp = false;
-				roman_str = chAppend(roman_str,exp[i]);
+				chAppend(roman_str,exp[i]);
 			}
 			else if (strchr(matchesOp,exp[i]) != NULL) {
 				if (!isOp && strlen(roman_str) > 0) {
@@ -244,7 +244,7 @@ int main(int argc, char *argv[]){
 					roman_str = "";
 				}
 				isOp = true;
-				finalExp = chAppend(finalExp,exp[i]);
+				chAppend(finalExp,exp[i]);
 			}
 			else if (exp[i] == '\0' && strlen(roman_str) > 0){
 				temp = finalConvert(roman_to_arabic(roman_str),roman_str);
@@ -264,7 +264,6 @@ int main(int argc, char *argv[]){
 	fputs(postfix(finalExp), fo);
 	fputs("\n", fo);
 	fputs("Value: ", fo);
-	tempStr = "";
 	tempStr = chAppend(tempStr,calc(finalExp));
 	fputs(tempStr, fo);
 	fclose(fo);
@@ -274,13 +273,13 @@ int main(int argc, char *argv[]){
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
-char calc(char* str){
+char calc(char* finalExp){
 	const char* matchesCalc = "+-*/";
-	char* finalExp = "";
 	struct node* stack = NULL;
 	struct node* opStack = NULL;
+	int length = strlen(finalExp);
 
-	for(int i=0; i<strlen(finalExp); i++) {
+	for(int i=0; i<length; i++) {
 		if(isdigit(finalExp[i])) {
 			stack = push(stack,finalExp[i]);
 		}
