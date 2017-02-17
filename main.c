@@ -10,12 +10,9 @@
 
 // Returns precedence value of corresponding operator
 int getPrec(char c){
-	if (c == '(') { return 3; }
-	else if (c == ')') { return 3; }
-	else if (c == '*') { return 2; }
-	else if (c == '/') { return 2; }
-	else if (c == '+') { return 1; }
-	else if (c == '-') { return 1; }
+	if (c == '(' || c == ')') { return 3; }
+	else if (c == '*' || c == '/') { return 2; }
+	else if (c == '+' || c == '-') { return 1; }
 	else {
 		//error
 		return -1;
@@ -29,6 +26,9 @@ char* postfix(char* str) {
 
 	const char* matchesOp = "+-*/()";
 	char* post = "";	//output postfix string
+	bool needOp = false;
+	bool secondCheck = false;
+
 	//declared and initialized stack
 	const int SIZE = strlen(str);
 	int stTop=0;
@@ -38,10 +38,16 @@ char* postfix(char* str) {
 	for(int i=0; i<strlen(str); i++) {
 		//check if is operand
 		if(isdigit(str[i])) {
+			if (secondCheck){
+				return "ERROR";
+			}
+			needOp = true;
 			post = chAppend(post,str[i]);
 		}
 		//check if is operator
 		else if(strchr(matchesOp,str[i]) != NULL) {
+			secondCheck = false;
+			needOp = false;
 			// stack empty? push operator
 			if(empty(&stTop)) {
 				push(stack,&stTop,str[i]);
@@ -49,7 +55,7 @@ char* postfix(char* str) {
 			else if (str[i] == '('){
 				push(stack,&stTop,str[i]);
 			}
-			else if (str[i] == ')'){
+			else if (str[i] == ')'){ // append all chars from stack until '(' found
 				while(!empty(&stTop) && peek(stack,&stTop) != '('){
 					post = chAppend(post,pop(stack,&stTop));
 				}
@@ -61,13 +67,14 @@ char* postfix(char* str) {
 				if(empty(&stTop) || peek(stack,&stTop) == '('){
 					push(stack,&stTop,str[i]);
 				}
-
+				// if char has higher precedence than top of stack, push it
 				else if (getPrec(str[i]) >= getPrec(peek(stack,&stTop))){
 					push(stack,&stTop,str[i]);
 				}
 
-				else {
-					while (getPrec(str[i]) < getPrec(peek(stack,&stTop))){
+				else { // append top of stack until operator has higher precedence
+					while (!empty(&stTop) &&
+								(getPrec(str[i]) < getPrec(peek(stack,&stTop)))){
 						post = chAppend(post,pop(stack,&stTop));
 					}
 					push(stack,&stTop,str[i]);
@@ -79,7 +86,10 @@ char* postfix(char* str) {
 
 		}
 		else { // string is unknown
+			if (str[i] == ' ' && needOp){
+				secondCheck = true;
 
+			}
 		}
 	}
 	while(!empty(&stTop)) {
@@ -239,8 +249,14 @@ int main(int argc, char *argv[]){
 
 	char* prefStr = finalExp;
 	char* postStr = finalExp;
-	prefStr = prefix(prefStr);
 	postStr = postfix(postStr);
+	if (strcmp(postStr,"ERROR") == 0){
+		fprintf(fo,"Error!");
+		fclose(fo);
+		return 0;
+	}
+	prefStr = prefix(prefStr);
+
 
 	// BEGIN FILE WRITING
 
