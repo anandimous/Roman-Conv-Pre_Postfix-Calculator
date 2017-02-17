@@ -50,7 +50,7 @@ int* roman_to_arabic(char* nums){
 int finalConvert(int* nums, char* roman){
 	int max = 0;
 	int total = 0;
-	for (int i = strlen(roman); i >= 0; i--){
+	for (int i = strlen(roman)-1; i >= 0; i--){
 		if (nums[i] >= max){
 			max = nums[i];
 			total += max;

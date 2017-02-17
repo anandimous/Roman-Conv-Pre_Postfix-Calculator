@@ -4,7 +4,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<stdbool.h>
-#include "cstack.h"
+#include "arrayStack.h"
 #include "romanConv.h"
 #include "main.h"
 
@@ -28,30 +28,53 @@ int getPrec(char c){
 char* postfix(char* str) {
 
 	const char* matchesOp = "+-*/()";
-	int max = strlen(str);	//size of input string
 	char* post = "";	//output postfix string
 	//declared and initialized stack
-	struct node* stack = NULL;
+	const int SIZE = strlen(str);
+	int stTop=0;
+	char stack[SIZE];
+	init(&stTop);
 
-	for(int i=0; i<max; i++) {
+	for(int i=0; i<strlen(str); i++) {
 		//check if is operand
 		if(isdigit(str[i])) {
 			post = chAppend(post,str[i]);
 		}
 		//check if is operator
 		else if(strchr(matchesOp,str[i]) != NULL) {
-			if(isEmpty(stack)) { stack = push(stack,str[i]); } //push op if empty stack
+			// stack empty? push operator
+			if(empty(&stTop)) {
+				push(stack,&stTop,str[i]);
+			}
+			else if (str[i] == '('){
+				push(stack,&stTop,str[i]);
+			}
+			else if (str[i] == ')'){
+				while(!empty(&stTop) && peek(stack,&stTop) != '('){
+					post = chAppend(post,pop(stack,&stTop));
+				}
+				pop(stack,&stTop);
+			}
+			// char is operator other than ( or )
 			else {
-				while(!isEmpty(stack) && getPrec(peek(stack)) > getPrec(str[i])) {
-					//checking precedence of chars in input string w/t the stack and append popped char to output string when condition is met
-					if(getPrec(str[i]) < getPrec(peek(stack))) {
-						post = chAppend(post,peek(stack));
-						stack = pop(stack);
-					 }
-					else { stack = push(stack,str[i]); }
+				// if Stack empty --> push
+				if(empty(&stTop) || peek(stack,&stTop) == '('){
+					push(stack,&stTop,str[i]);
+				}
+
+				else if (getPrec(str[i]) >= getPrec(peek(stack,&stTop))){
+					push(stack,&stTop,str[i]);
+				}
+
+				else {
+					while (getPrec(str[i]) < getPrec(peek(stack,&stTop))){
+						post = chAppend(post,pop(stack,&stTop));
+					}
+					push(stack,&stTop,str[i]);
 				}
 			}
 		}
+
 		else if(str[i] == '\n'){
 
 		}
@@ -59,9 +82,8 @@ char* postfix(char* str) {
 
 		}
 	}
-	while(!isEmpty(stack)) {
-		post = chAppend(post,peek(stack));
-		stack = pop(stack);
+	while(!empty(&stTop)) {
+		post = chAppend(post,pop(stack,&stTop));
 	 } //append all remaining elements in the stack to the postfix string
 
 	return post;
@@ -127,14 +149,12 @@ char* strReverse(char* str) {  // returns the reverse of a string
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]){
-	int temp;
 	char* tempStr = "";
 	char* inFile = argv[1];
 	char* outFile;
 	// char* ret;
 	char* bfr = "";
 	char* finalExp = "";
-	char* roman_str = "";
 	const char* matchesRoman = "IiVvXxLlCcDdMm";
 	const char* matchesSpace = " ";
 	const char* matchesOp = "+-*/()";
@@ -212,53 +232,8 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-	// convert string with roman nums to string with only integers
 
-	if (strstr(bfr,matchesRoman) != NULL){
-		bool isOp = false;
-		for (int i = 0; i < strlen(bfr)+1; i++){
-
-			if (isdigit(bfr[i])){				// Append Digit -> finalExp
-				finalExp = chAppend(finalExp,bfr[i]);
-			}
-
-			else if (strchr(matchesSpace,bfr[i])){	// Append ' ' -> finalExp
-				if (strlen(roman_str) > 0){
-
-				}
-				else {
-					finalExp = chAppend(finalExp,bfr[i]);
-				}
-			}
-
-			else if (strchr(matchesRoman,bfr[i]) != NULL) {  // Append roman num -> roman_str
-
-				isOp = false;
-				roman_str = chAppend(roman_str,bfr[i]);
-			}
-			else if (strchr(matchesOp,bfr[i]) != NULL) {
-				if (!isOp && strlen(roman_str) > 0) {
-					temp = finalConvert(roman_to_arabic(roman_str),roman_str);
-					sprintf(tempStr,"%d", temp);
-					strAppend(finalExp,tempStr);
-
-					roman_str = "";
-				}
-				isOp = true;
-				finalExp = chAppend(finalExp,bfr[i]);
-			}
-			else if (bfr[i] == '\0' && strlen(roman_str) > 0){
-				temp = finalConvert(roman_to_arabic(roman_str),roman_str);
-				sprintf(tempStr,"%d",temp);
-				strAppend(finalExp,tempStr);
-				roman_str = "";
-			}
-
-		}
-	}
-	else {
-		finalExp = bfr;
-	}
+	finalExp = ridRoman(bfr);
 
 	// Used to get Infix as prefix and as postfix in prep for file write
 
@@ -276,7 +251,15 @@ int main(int argc, char *argv[]){
 	fputs(postStr, fo);
 	fputs("\n", fo);
 	fputs("Value: ", fo);
-	tempStr = chAppend(tempStr,calc(finalExp));
+	tempStr = chAppend(tempStr,calc(postStr)); // < 12
+	if (!isdigit(tempStr[0])){
+		char fixed = tempStr[0];  // <
+		int fixedNum = fixed - '0';  // 12
+		char* final = (char*)malloc(sizeof(tempStr));
+		sprintf(final,"%d", fixedNum);
+		tempStr = final;
+
+	}
 	fputs(tempStr, fo);
 	fclose(fo);
 	return 0;
@@ -284,113 +267,125 @@ int main(int argc, char *argv[]){
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
+// convert string with roman nums to string with only integers  2 + IV --> 2 + 4
+char* ridRoman(char* bfr){
+	char* finalExp = "";
+	char* matchesRoman = "IiVvXxLlCcDdMm";
+	char* matchesOp = "+-*/()";
+	char* roman_str = "";
+	int temp;
+	int* tempArr;
+	bool isOp = false;
+
+	for (int i=0; i<strlen(bfr); i++){
+		if (strchr(matchesRoman,bfr[i]) != NULL){
+			isOp = true;
+		}
+	}
+
+	if (isOp){
+		isOp = false;
+		for (int i = 0; i < strlen(bfr); i++){
+
+			if (isdigit(bfr[i])){				// Append Digit -> finalExp
+				finalExp = chAppend(finalExp,bfr[i]);
+			}
+
+			else if (bfr[i] == ' '){	// Append ' ' -> finalExp
+				if (strlen(roman_str) > 0){
+
+				}
+				else {
+					finalExp = chAppend(finalExp,bfr[i]);
+				}
+			}
+
+			else if (strchr(matchesRoman,bfr[i]) != NULL) {  // Append roman num -> roman_str
+
+				isOp = false;
+				roman_str = chAppend(roman_str,bfr[i]);
+			}
+			else if (strchr(matchesOp,bfr[i]) != NULL) {
+				if (!isOp && strlen(roman_str) > 0) {
+					tempArr = roman_to_arabic(roman_str);
+					temp = finalConvert(tempArr,roman_str);					// tempStr = (char)(temp + '0');
+					// strAppend(finalExp,tempStr);
+					sprintf(finalExp,"%s%d",finalExp,temp);
+					roman_str = "";
+				}
+				isOp = true;
+				finalExp = chAppend(finalExp,bfr[i]);
+			}
+			else if ((bfr[i] == '\0' || bfr[i] == '\n') && strlen(roman_str) > 0){
+				tempArr = roman_to_arabic(roman_str);
+				temp = finalConvert(tempArr,roman_str);
+				// tempStr = (char)(temp + '0');
+				// strAppend(finalExp,tempStr);
+				sprintf(finalExp,"%s%d",finalExp,temp);
+				roman_str = "";
+			}
+		}
+		if (strlen(roman_str) > 0){
+			tempArr = roman_to_arabic(roman_str);
+			temp = finalConvert(tempArr,roman_str);			// tempStr = (char)(temp + '0');
+			// strAppend(finalExp,tempStr);
+			sprintf(finalExp,"%s%d",finalExp,temp);
+			roman_str = "";
+		}
+		return finalExp;
+	}
+	else {
+		return bfr;
+	}
+}
+
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
 // Calculates value of infix expression
-char calc(char* finalExp){
-	const char* matchesCalc = "+-*/";
-	struct node* stack = NULL;
-	struct node* opStack = NULL;
-	int length = strlen(finalExp);
+char calc(char* pfStr){
+	char* matchesOp = "+-*/";
+	const int SIZE = strlen(pfStr);
+	int stTop=0;
+	char stack[SIZE];
+	init(&stTop);
 
-	for(int i=0; i<length; i++) {
-		if(isdigit(finalExp[i])) {
-			stack = push(stack,finalExp[i]);
+	for (int i=0; i < strlen(pfStr); i++){
+		if (isdigit(pfStr[i])){
+			push(stack,&stTop,pfStr[i]);
 		}
-
-		else if (finalExp[i] == '(') {
-			stack = push(opStack,finalExp[i]);
-		}
-
-		else if (finalExp[i] == ')') {
-			while (peek(opStack) != '('){
-				char op = peek(opStack);
-				opStack = pop(opStack);
-				int val2 = peek(stack);
-				stack = pop(stack);
-				int val1 = peek(stack);
-				stack = pop(stack);
-
-				if (op == '+'){
-					val1 = val1 + val2;
-					stack = push(stack,val1 + '0');
-				}
-				else if (op == '-'){
-					val1 = val1 - val2;
-					stack = push(stack,val1 + '0');
-				}
-				else if (op == '*'){
-					val1 = val1 * val2;
-					stack = push(stack,val1 + '0');
-				}
-				else if (op == '/'){
-					val1 = val1 / val2;
-					stack = push(stack,val1 + '0');
-				}
+		else if (strchr(matchesOp,pfStr[i]) != NULL){
+			char temp = pop(stack,&stTop);
+			int val1 = peek(stack,&stTop) - '0';
+			int val2 = temp - '0';
+			if (pfStr[i] == '+'){
+				val1 = val1 + val2;
+				temp = val1 + '0';
+				pop(stack,&stTop);
+				push(stack,&stTop,temp);
 			}
-			peek(opStack);
-			opStack = pop(opStack);
-		}
-
-		else if (strchr(matchesCalc,finalExp[i])){
-			while (!isEmpty(opStack) && getPrec(peek(opStack)) >= getPrec(finalExp[i])){
-				char op = peek(opStack);
-				opStack = pop(opStack);
-				int val2 = peek(stack);
-				stack = pop(stack);
-				int val1 = peek(stack);
-				stack = pop(stack);
-
-				if (op == '+'){
-					val1 = val1 + val2;
-					stack = push(stack,val1 + '0');
-				}
-				else if (op == '-'){
-					val1 = val1 - val2;
-					stack = push(stack,val1 + '0');
-				}
-				else if (op == '*'){
-					val1 = val1 * val2;
-					stack = push(stack,val1 + '0');
-				}
-				else if (op == '/'){
-					val1 = val1 / val2;
-					stack = push(stack,val1 + '0');
-				}
-
-				opStack = push(opStack,finalExp[i]);
+			else if (pfStr[i] == '-'){
+				val1 = val1 - val2;
+				temp = val1 + '0';
+				pop(stack,&stTop);
+				push(stack,&stTop,temp);
+			}
+			else if (pfStr[i] == '*'){
+				val1 = val1 * val2;
+				temp = val1 + '0';
+				pop(stack,&stTop);
+				push(stack,&stTop,temp);
+			}
+			else if (pfStr[i] == '/'){
+				val1 = val1 / val2;
+				temp = val1 + '0';
+				pop(stack,&stTop);
+				push(stack,&stTop,temp);
+			}
+			else {
+				// never reached
 			}
 		}
-
 	}
-
-	while(!isEmpty(opStack)) {
-		char op = peek(opStack);
-		opStack = pop(opStack);
-		int val2 = peek(stack);
-		stack = pop(stack);
-		int val1 = peek(stack);
-		stack = pop(stack);
-
-		if (op == '+'){
-			val1 = val1 + val2;
-			stack = push(stack,val1 + '0');
-		}
-		else if (op == '-'){
-			val1 = val1 - val2;
-			stack = push(stack,val1 + '0');
-		}
-		else if (op == '*'){
-			val1 = val1 * val2;
-			stack = push(stack,val1 + '0');
-		}
-		else if (op == '/'){
-			val1 = val1 / val2;
-			stack = push(stack,val1 + '0');
-		}
-
-	}
-	return peek(stack);
-	stack = pop(stack);
-
+	return pop(stack,&stTop);
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
