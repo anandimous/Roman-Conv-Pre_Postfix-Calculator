@@ -249,8 +249,12 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-
 	finalExp = ridRoman(bfr);
+	if (strcmp(finalExp,"ERROR!") == 0){
+		fprintf(fo,"Error!");
+		fclose(fo);
+		return 0;
+	}
 
 	// Used to get Infix as prefix and as postfix in prep for file write
 
@@ -331,7 +335,11 @@ char* ridRoman(char* bfr){
 			else if (strchr(matchesOp,bfr[i]) != NULL) {
 				if (!isOp && strlen(roman_str) > 0) {
 					tempArr = roman_to_arabic(roman_str);
-					temp = finalConvert(tempArr,roman_str);					// tempStr = (char)(temp + '0');
+					temp = finalConvert(tempArr,roman_str);	// tempStr = (char)(temp + '0');
+					if(!temp) {
+						return "ERROR!";
+					}
+					if(temp == -1) { return "ERROR!";	}
 					// strAppend(finalExp,tempStr);
 					sprintf(finalExp,"%s%d",finalExp,temp);
 					roman_str = "";
@@ -341,8 +349,11 @@ char* ridRoman(char* bfr){
 			}
 			else if ((bfr[i] == '\0' || bfr[i] == '\n') && strlen(roman_str) > 0){
 				tempArr = roman_to_arabic(roman_str);
-				temp = finalConvert(tempArr,roman_str);
-				// tempStr = (char)(temp + '0');
+				temp = finalConvert(tempArr,roman_str);	// tempStr = (char)(temp + '0');
+				if(!temp) {
+					return "ERROR!";
+				}
+				if(temp == -1) { return "ERROR!";	}
 				// strAppend(finalExp,tempStr);
 				sprintf(finalExp,"%s%d",finalExp,temp);
 				roman_str = "";
@@ -350,7 +361,11 @@ char* ridRoman(char* bfr){
 		}
 		if (strlen(roman_str) > 0){
 			tempArr = roman_to_arabic(roman_str);
-			temp = finalConvert(tempArr,roman_str);			// tempStr = (char)(temp + '0');
+			temp = finalConvert(tempArr,roman_str);	// tempStr = (char)(temp + '0');
+			if(!temp) {
+				return "ERROR!";
+			}
+			if(temp == -1) { return "ERROR!";	}
 			// strAppend(finalExp,tempStr);
 			sprintf(finalExp,"%s%d",finalExp,temp);
 			roman_str = "";

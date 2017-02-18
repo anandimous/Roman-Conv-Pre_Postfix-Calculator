@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<string.h>
+#include<stdbool.h>
 #include<stdlib.h>
 #include "romanConv.h"
 
@@ -41,7 +42,7 @@ int* roman_to_arabic(char* nums){
 			// Do Nothing
 		}
 		else {
-			// Some Kind Of Error
+			converted[i] = -1;
 		}
 	}
 	return converted;
@@ -49,7 +50,26 @@ int* roman_to_arabic(char* nums){
 
 int finalConvert(int* nums, char* roman){
 	int max = 0;
+	int check = -1;
 	int total = 0;
+	char* matchesNum = "123456789";
+
+	for(int j = strlen(roman)-1; j >= 0; j--){
+		if(nums[j] == check) {
+			printf("error\n");
+		}
+
+		char temp[5];
+		sprintf(temp, "%d", nums[j+2]);
+
+		if(strstr(matchesNum, temp) != NULL) {
+			if(nums[j] < nums[j+2]) {
+				return -1;
+			}
+		}
+		//1 1 5
+	}
+
 	for (int i = strlen(roman)-1; i >= 0; i--){
 		if (nums[i] >= max){
 			max = nums[i];
