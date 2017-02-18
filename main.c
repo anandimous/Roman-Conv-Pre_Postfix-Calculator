@@ -46,6 +46,7 @@ char* postfix(char* str) {
 		}
 		//check if is operator
 		else if(strchr(matchesOp,str[i]) != NULL) {
+			post = chAppend(post,' ');
 			secondCheck = false;
 			needOp = false;
 			// stack empty? push operator
@@ -89,6 +90,12 @@ char* postfix(char* str) {
 			if (str[i] == ' ' && needOp){
 				secondCheck = true;
 
+			}
+			if (str[i] == ' '){
+				post = chAppend(post,' ');
+			}
+			else if (needOp){
+				post = chAppend(post,' ');
 			}
 		}
 	}
@@ -267,8 +274,8 @@ int main(int argc, char *argv[]){
 	fputs(postStr, fo);
 	fputs("\n", fo);
 	fputs("Value: ", fo);
-	tempStr = chAppend(tempStr,calc(postStr)); // < 12
-	if (!isdigit(tempStr[0])){
+	tempStr = calc(postStr); // < 12
+	if (!isdigit(tempStr[0]) && (strcmp(tempStr,"ERROR!") != 0)){
 		char fixed = tempStr[0];  // <
 		int fixedNum = fixed - '0';  // 12
 		char* final = (char*)malloc(sizeof(tempStr));
@@ -357,51 +364,119 @@ char* ridRoman(char* bfr){
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 // Calculates value of infix expression
-char calc(char* pfStr){
+char* calc(char* pfStr){
 	char* matchesOp = "+-*/";
-	const int SIZE = strlen(pfStr);
+	const int SIZE = 3 * (strlen(pfStr));
+	char* tempStr = "";
+	char* intStr;
+	char* intStr2;
 	int stTop=0;
+	int val1;
+	int val2;
 	char stack[SIZE];
 	init(&stTop);
 
 	for (int i=0; i < strlen(pfStr); i++){
 		if (isdigit(pfStr[i])){
-			push(stack,&stTop,pfStr[i]);
+			tempStr = "";
+			while (isdigit(pfStr[i])){
+				tempStr = chAppend(tempStr,pfStr[i]);
+				i++;
+			}
+			i--;
+			push(stack,&stTop,':');
+			for(int j = strlen(tempStr)-1; j >= 0; j--){
+				push(stack,&stTop,tempStr[j]);
+			}
+			push(stack,&stTop,':');
 		}
 		else if (strchr(matchesOp,pfStr[i]) != NULL){
 			char temp = pop(stack,&stTop);
-			int val1 = peek(stack,&stTop) - '0';
-			int val2 = temp - '0';
+			if (temp == ':'){
+				intStr = "";
+				while (peek(stack,&stTop) != ':'){
+					intStr = chAppend(intStr,pop(stack,&stTop));
+				} // remove ':'
+				pop(stack,&stTop);
+				val2 = atoi(intStr);
+			}
+			else {
+				// Operating on non-number!!!!!!
+			}
+			temp = pop(stack,&stTop);
+			if (temp == ':'){
+				intStr2 = "";
+				while (peek(stack,&stTop) != ':'){
+					intStr2 = chAppend(intStr2,pop(stack,&stTop));
+				} // remove ':'
+				pop(stack,&stTop);
+				val1 = atoi(intStr2);
+			}
+			else {
+				// Operating on non-number!!!
+			}
+
 			if (pfStr[i] == '+'){
 				val1 = val1 + val2;
-				temp = val1 + '0';
-				pop(stack,&stTop);
-				push(stack,&stTop,temp);
+				char* final = (char*)malloc(sizeof(tempStr));
+				sprintf(final,"%d",val1);
+				// pop(stack,&stTop);
+				push(stack,&stTop,':');
+				for (int k = strlen(final)-1; k >= 0; k--){
+					push(stack,&stTop,final[k]);
+				}
+				push(stack,&stTop,':');
 			}
 			else if (pfStr[i] == '-'){
 				val1 = val1 - val2;
-				temp = val1 + '0';
-				pop(stack,&stTop);
-				push(stack,&stTop,temp);
+				char* final = (char*)malloc(sizeof(tempStr));
+				sprintf(final,"%d",val1);
+				// pop(stack,&stTop);
+				push(stack,&stTop,':');
+				for (int k = strlen(final)-1; k >= 0; k--){
+					push(stack,&stTop,final[k]);
+				}
+				push(stack,&stTop,':');
 			}
 			else if (pfStr[i] == '*'){
 				val1 = val1 * val2;
-				temp = val1 + '0';
-				pop(stack,&stTop);
-				push(stack,&stTop,temp);
+				char* final = (char*)malloc(sizeof(tempStr));
+				sprintf(final,"%d",val1);
+				// pop(stack,&stTop);
+				push(stack,&stTop,':');
+				for (int k = strlen(final)-1; k >= 0; k--){
+					push(stack,&stTop,final[k]);
+				}
+				push(stack,&stTop,':');
 			}
 			else if (pfStr[i] == '/'){
-				val1 = val1 / val2;
-				temp = val1 + '0';
-				pop(stack,&stTop);
-				push(stack,&stTop,temp);
+				if (val2 == 0){
+					return "ERROR!";
+				}
+				else {
+					val1 = val1 / val2;
+					char* final = (char*)malloc(sizeof(tempStr));
+					sprintf(final,"%d",val1);
+					// pop(stack,&stTop);
+					push(stack,&stTop,':');
+					for (int k = strlen(final)-1; k >= 0; k--){
+						push(stack,&stTop,final[k]);
+					}
+					push(stack,&stTop,':');
+				}
 			}
 			else {
 				// never reached
 			}
 		}
 	}
-	return pop(stack,&stTop);
+	tempStr = "";
+	pop(stack,&stTop);
+	while(peek(stack,&stTop) != ':'){
+		tempStr = chAppend(tempStr,pop(stack,&stTop));
+	}
+	pop(stack,&stTop);
+	return tempStr;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
