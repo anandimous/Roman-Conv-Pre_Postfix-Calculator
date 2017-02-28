@@ -5,8 +5,6 @@
 * Team Process PRE Project
 * CSE 410 Carl Alphonce [UNIVERSITY AT BUFFALO]
 
-## Intro ##
-
 ## Description ##
 
 A C program that reads from a file (filename.IN), interprets the input as an infix 
