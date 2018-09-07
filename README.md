@@ -18,5 +18,5 @@ NOTE: This is my first attempt at C and thus, the code is not optimally develope
 
 ## Contributors ##
 ||                                 ||
-|  ------------   |  :-----------:  |
+|  ------------   |  -----------  |
 | **Aniruddha Nandi** | **Nicholas Martin** |
